@@ -1,0 +1,28 @@
+name: Generate Meme
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  meme:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: pip install Pillow
+      - name: Download Image from Issue
+        env:
+          BODY: ${{ github.event.issue.body }}
+        run: |
+          echo "$BODY" > image_url.txt
+          URL=$(head -n 1 image_url.txt)
+          wget "$URL" -O image.jpg 2>/dev/null || wget "https://raw.githubusercontent.com/Igorka197/meme-generator/main/default.jpg" -O image.jpg
+      - name: Run Generator
+        run: python meme.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: my-meme
+          path: meme_result.png
